@@ -1,5 +1,16 @@
 {
   "appId": "com.sufianjaved.ftppro",
   "appName": "FTP Pro",
-  "webDir": "www"
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "Keyboard": {
+      "resize": "None"
+    },
+    "StatusBar": {
+      "overlaysWebView": false,
+      "backgroundColor": "#ffffff",
+      "style": "LIGHT"
+    }
+  }
 }
