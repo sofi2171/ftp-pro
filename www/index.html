@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTP Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #25D366;
+            --bg-color: #ffffff;
+            --text-main: #1c1e21;
+            --card-bg: #f0f2f5;
+            --header-bg: #ffffff;
+            --nav-bg: #ffffff;
+            --border: #dddddd;
+        }
+
+        /* Dark Theme Variables */
+        .dark-theme {
+            --bg-color: #121212;
+            --text-main: #ffffff;
+            --card-bg: #1e1e1e;
+            --header-bg: #1e1e1e;
+            --nav-bg: #1e1e1e;
+            --border: #333333;
+        }
+
+        * { box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--header-bg);
+            padding: 18px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* --- Main Area --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .server-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 10px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .server-circle.active {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 30px rgba(37, 211, 102, 0.3);
+        }
+
+        .server-circle i { font-size: 60px; color: #888; }
+        .server-circle.active i { color: var(--primary-green); }
+
+        .ip-box {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: var(--primary-green);
+            margin-top: 15px;
+            border: 1px solid var(--border);
+        }
+
+        /* --- Settings Panel --- */
+        #settingsPanel {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* --- Navigation Bar --- */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--nav-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .nav-item.active { color: var(--primary-green); }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; }
+
+        /* --- Buttons --- */
+        .btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 15px 45px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn.stop { background: #ff4757; }
+
+        /* --- Toggle Switch --- */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        input:checked + .slider { background-color: var(--primary-green); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        #ad-placeholder {
+            width: 100%;
+            height: 50px;
+            background: #8882;
+            text-align: center;
+            line-height: 50px;
+            font-size: 10px;
+            position: fixed;
+            bottom: 65px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>FTP PRO</header>
+
+    <main id="homeContent">
+        <div id="circle" class="server-circle">
+            <i class="fas fa-network-wired"></i>
+            <p id="statusText" style="font-size: 14px; margin-top: 10px;">OFFLINE</p>
+        </div>
+        
+        <button id="mainBtn" class="btn" onclick="toggleServer()">START SERVER</button>
+        
+        <div id="ipContainer" style="display:none; text-align:center;">
+            <div class="ip-box" id="ipAddress">ftp://192.168.1.5:2221</div>
+            <p style="font-size: 12px; color: #888; margin-top: 10px;">Enter this URL on your PC</p>
+        </div>
+    </main>
+
+    <main id="settingsPanel">
+        <h3 style="margin-bottom: 20px;">Settings</h3>
+        <div class="setting-row">
+            <span>Dark Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-row">
+            <span>Anonymous Login</span>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="setting-row">
+            <span>Port</span>
+            <span style="color: var(--primary-green); font-weight: bold;">2221</span>
+        </div>
+    </main>
+
+    <div id="ad-placeholder">AD_BANNER_AREA</div>
+
+    <nav>
+        <div class="nav-item active" onclick="showPage('home')">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="alert('Remote Mouse Feature Coming Soon!')">
+            <i class="fas fa-mouse-pointer"></i>
+            <span>Mouse</span>
+        </div>
+        <div class="nav-item" onclick="showPage('settings')">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </div>
+    </nav>
+
+    <script>
+        // Server Toggle
+        let isRunning = false;
+        function toggleServer() {
+            isRunning = !isRunning;
+            const btn = document.getElementById('mainBtn');
+            const circle = document.getElementById('circle');
+            const ip = document.getElementById('ipContainer');
+            const status = document.getElementById('statusText');
+
+            if (isRunning) {
+                btn.innerText = "STOP SERVER";
+                btn.classList.add('stop');
+                circle.classList.add('active');
+                ip.style.display = "block";
+                status.innerText = "RUNNING";
+                status.style.color = "#25D366";
+            } else {
+                btn.innerText = "START SERVER";
+                btn.classList.remove('stop');
+                circle.classList.remove('active');
+                ip.style.display = "none";
+                status.innerText = "OFFLINE";
+                status.style.color = "#888";
+            }
+        }
+
+        // Navigation
+        function showPage(page) {
+            const home = document.getElementById('homeContent');
+            const settings = document.getElementById('settingsPanel');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            navItems.forEach(item => item.classList.remove('active'));
+
+            if (page === 'home') {
+                home.style.display = 'flex';
+                settings.style.display = 'none';
+                navItems[0].classList.add('active');
+            } else {
+                home.style.display = 'none';
+                settings.style.display = 'block';
+                navItems[2].classList.add('active');
+            }
+        }
+
+        // Dark Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+    </script>
+</body>
+</html>
